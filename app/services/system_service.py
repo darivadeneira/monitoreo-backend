@@ -10,7 +10,7 @@ def get_system_resources():
     disk_used = psutil.disk_usage('/').used / (1024 ** 3)
     
     return {
-        'cpu': cpu_info['cpu_percentage'],
+        'cpu': cpu_info,
         'process_act': cpu_info['process_count'],
         'processes': cpu_info['processes'],
         'memory': memory_info,
