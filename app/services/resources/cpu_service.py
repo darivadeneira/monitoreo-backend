@@ -1,4 +1,6 @@
 import psutil
+import subprocess
+
 
 def get_cpu_info():
     # Obtener porcentaje de uso de la CPU
@@ -14,16 +16,17 @@ def get_cpu_info():
     
     # Intentar obtener la temperatura del CPU
     try:
-        temps = psutil.sensors_temperatures()
-        cpu_temp = None
-        if temps:
-            # Iterar a través de los sensores y obtener la temperatura
-            for sensor_name, sensor_list in temps.items():
-                if sensor_list:
-                    cpu_temp = sensor_list[0].current  # Obtener la temperatura del primer sensor
-                    break
+        # Ejecutar el comando `sensors` y obtener la salida
+        output = subprocess.check_output("sensors", shell=True).decode("utf-8")
+        # Procesar la salida para encontrar la temperatura del CPU
+        for line in output.splitlines():
+            if "Core" in line:  # Buscar las líneas que contienen información del CPU
+                temp = line.split(":")[1].strip().split()[0]
+                return temp
+        return None  # Si no se encuentra la temperatura
     except Exception as e:
-        cpu_temp = None  # Si ocurre un error, la temperatura será None
+        print(f"Error al obtener la temperatura: {e}")
+        return None
 
     # Obtener lista de procesos
     process_list = []
