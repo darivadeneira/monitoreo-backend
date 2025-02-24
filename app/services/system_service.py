@@ -11,8 +11,6 @@ def get_system_resources():
     
     return {
         'cpu': cpu_info,
-        'process_act': cpu_info['process_count'],
-        'processes': cpu_info['processes'],
         'memory': memory_info,
         'network': network_info,
         'disk': round(disk_used, 2),
