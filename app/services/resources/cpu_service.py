@@ -1,5 +1,4 @@
 import psutil
-import subprocess
 
 
 def get_cpu_info():
@@ -17,14 +16,12 @@ def get_cpu_info():
     # Intentar obtener la temperatura del CPU
     cpu_temp = None  # Inicializar temperatura como None
     try:
-        # Ejecutar el comando `sensors` y obtener la salida
-        output = subprocess.check_output("sensors", shell=True).decode("utf-8")
-        # Procesar la salida para encontrar la temperatura del CPU
-        for line in output.splitlines():
-            if "Core" in line:  # Buscar las líneas que contienen información del CPU
-                temp = line.split(":")[1].strip().split()[0]
-                cpu_temp = temp  # Asignar la temperatura encontrada
-                break
+        # Usar psutil para obtener la temperatura del CPU
+        temps = psutil.sensors_temperatures()
+        if 'coretemp' in temps:
+            core_temps = temps['coretemp']
+            if core_temps:
+                cpu_temp = core_temps[0].current  # Obtener la temperatura actual del primer núcleo
     except Exception as e:
         print(f"Error al obtener la temperatura: {e}")
 
@@ -48,7 +45,3 @@ def get_cpu_info():
         'process_count': len(list(psutil.process_iter())),
         'processes': process_list
     }
-
-# Llamada a la función de ejemplo
-cpu_info = get_cpu_info()
-print(cpu_info)
