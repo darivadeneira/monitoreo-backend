@@ -10,7 +10,7 @@ def create_alert():
         data = request.get_json()
         
         # Validar datos requeridos
-        required_fields = ['resource_type', 'threshold', 'current_value']
+        required_fields = ['resource_type', 'threshold', 'current_value','user_id']
         if not all(field in data for field in required_fields):
             return jsonify({'error': 'Se requieren: tipo de recurso, umbral y valor actual'}), 400
 
@@ -19,6 +19,7 @@ def create_alert():
             resource_type=data['resource_type'],
             threshold=float(data['threshold']),
             current_value=float(data['current_value']),
+            user_id=int(data['user_id']),
         )
         
         # Guardar en base de datos
