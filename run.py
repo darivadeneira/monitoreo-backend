@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask_socketio import SocketIO
 from flask_cors import CORS
 from app.routes.resources import resources_socket, resources
@@ -55,17 +55,45 @@ db.init_app(app)
 # Registrar blueprints
 app.register_blueprint(auth, url_prefix='/auth')
 app.register_blueprint(resources, url_prefix='/resources')
-app.register_blueprint(alerts, url_prefix='/alerts')  # Añadir esta línea
+app.register_blueprint(alerts, url_prefix='/alerts')
+
+active_threads = {}
 
 @socketio.on("connect")
 def handle_connect():
-    print("Cliente conectado")
-    thread = Thread(target=resources_socket, args=(socketio, app))
-    thread.daemon = True
-    thread.start()
+    try:
+        user_id = request.args.get('user_id')
+        if not user_id:
+            return False
+        
+        user_id = int(user_id)
+        
+        if user_id in active_threads:
+            print(f"Deteniendo hilo anterior para usuario {user_id}")
+            active_threads[user_id] = False
+        
+        print(f"Cliente conectado - Usuario ID: {user_id}")
+        thread = Thread(target=resources_socket, args=(socketio, app, user_id))
+        thread.daemon = True
+        active_threads[user_id] = True
+        thread.start()
+        return True
+        
+    except Exception as e:
+        print(f"Error en conexión: {e}")
+        return False
 
 @socketio.on("disconnect")
 def handle_disconnect():
+    try:
+        user_id = request.args.get('user_id')
+        if user_id:
+            user_id = int(user_id)
+            if user_id in active_threads:
+                active_threads[user_id] = False
+                print(f"Cliente desconectado - Usuario ID: {user_id}")
+    except Exception as e:
+        print(f"Error en desconexión: {e}")
     print("Cliente desconectado")
 
 def main():
